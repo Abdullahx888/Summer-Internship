@@ -1,0 +1,143 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{natbib}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{microtype}
+\usepackage{hyperref}
+\bibliographystyle{plainnat}
+\title{Syllogistic Reasoning, Content Effects, and Belief Bias}
+\author{Author Name \\
+	Affiliation \\
+	\texttt{email@example.com}}
+\title{Syllogistic Reasoning, Content Effects, and Belief Bias}
+\author{Abdullah Saleem \\
+	SEECS, NUST \\
+	\texttt{i220882@nu.edu.pk}
+	\and
+	Ahsan Zaidi \\
+	SEECS, NUST \\
+	\texttt{azaidi.bsai24seecs@seecs.edu.pk}
+	\and
+	Mehwish Fatima \\
+	SEECS, NUST \\
+	\texttt{mehwish.fatima@seecs.edu.pk}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document summarizes six short answers on syllogistic reasoning, content effects, belief bias, and failure modes and mitigation strategies for large language models on logical tasks. It is formatted using the ACL template.
+\end{abstract}
+
+\section{Syllogistic Reasoning}
+
+Syllogistic reasoning is a form of deductive reasoning in which a conclusion is drawn from two premises that share a common ``middle'' term. Each premise relates two categories, and the task is to judge whether a given conclusion follows necessarily from the premises---regardless of whether the statements are actually true in the real world.
+
+A classic categorical syllogism has the structure:
+
+Premise 1: All A are B.
+
+Premise 2: All B are C.
+
+Conclusion: All A are C.
+
+Concretely:
+
+All mammals are warm-blooded. \\
+All dogs are mammals. \\
+Therefore, all dogs are warm-blooded. (Valid)
+
+Validity in syllogistic reasoning depends purely on logical form---the structure of quantifiers (``all,'' ``some,'' ``no'') and the arrangement of terms---not on whether the content is realistic or familiar. This is what makes syllogisms useful for studying human reasoning: researchers can hold logical form constant while varying content, and see whether people's judgments track logic or something else.
+
+This is also why syllogistic reasoning is central to debates about whether humans (and increasingly, LLMs) reason using formal logical rules, or instead rely on heuristics, mental models, or prior beliefs---which is exactly where content effects and belief bias come in.
+
+\section{Content Effect}
+
+A content effect occurs when the believability, familiarity, or real-world meaning of the terms in a syllogism influences how easily or accurately people reason about it, even though the logical structure is identical. In principle, logical validity should be insensitive to content, but in practice, people reason more accurately and more quickly with concrete, familiar content than with abstract or unfamiliar content.
+
+Example---same logical form, different content:
+
+Abstract version:
+All A are B. All B are C. Therefore, all A are C.
+
+Concrete version:
+All roses are flowers. All flowers need water. Therefore, all roses need water.
+
+Both arguments share the exact same valid structure, but people typically find the concrete, meaningful version easier to evaluate correctly than the abstract A/B/C version. This is the content effect: performance and reasoning strategy shift with subject matter, not just logical form.
+
+Content effects are usually explained by the idea that people reason using mental models or real-world knowledge to fill in meaning, rather than applying abstract formal rules---concrete content gives reasoners more scaffolding to construct and check a mental model of the situation.
+
+\section{Belief Bias}
+
+Belief bias is the tendency to judge a conclusion as logically valid or invalid based on whether it is believable or consistent with prior knowledge, rather than on whether it actually follows logically from the premises. It is a specific and well-studied type of content effect, and it is one of the strongest, most replicated findings in reasoning research.
+
+Belief bias becomes especially visible when logical validity and believability conflict. This produces four combinations:
+
+\begin{itemize}
+	\item Conclusion believable / Logically valid: Easy -- most people agree.
+	\item Conclusion believable / Logically invalid: Hard -- often wrongly accepted.
+	\item Conclusion unbelievable / Logically valid: Hard -- often wrongly rejected.
+	\item Conclusion unbelievable / Logically invalid: Easy -- most people agree.
+\end{itemize}
+
+The most diagnostic case is valid-but-unbelievable, since it most clearly separates logic from belief:
+
+Premise 1: All flowers need water. \\
+Premise 2: Roses need water. \\
+Conclusion: Roses are flowers.
+
+And the reverse---a logically valid syllogism with an unbelievable conclusion, which people often incorrectly reject:
+
+Premise 1: All mammals can walk. \\
+Premise 2: Whales are mammals. \\
+Conclusion: Whales can walk.
+
+Here the conclusion is logically valid given the premises, but because it clashes with real-world knowledge (whales swim, not walk), people frequently---and incorrectly---judge the argument as invalid. This mismatch between logical validity and subjective believability is the hallmark of belief bias.
+
+Belief bias is typically explained by dual-process accounts of reasoning: a fast, intuitive system that evaluates conclusions based on prior belief and plausibility, and a slower, more effortful analytic system capable of genuine logical evaluation. Belief bias emerges when the intuitive system dominates, especially under time pressure, cognitive load, or low motivation to engage in careful analysis.
+
+\section{Why Do LLMs Fail on Logical Tasks?}
+
+When you look at why these models completely mess up on logic, it basically comes down to several issues: semantic entanglement, form heuristics, structural blindspots, and sensitivity to layout.
+
+\paragraph{Semantic Entanglement}
+LLMs are trained to predict the next word by reading large text corpora. They learn real-world facts and correlations extremely well, and those learned facts can override pure logical reasoning. Mechanistically, some analyses show that ``factual'' attention heads and hidden directions can leak real-world knowledge into the residual stream, which corrupts pure symbol-tracking required for formal logic.
+
+\paragraph{Atmosphere / Form Heuristics}
+On zero-shot setups, models often rely on superficial cues rather than computing symbolic structure. One common shortcut is the Atmosphere Heuristic: models pick up quantifier ``vibes'' like ``Some'' or ``No'' and tend to mirror them in conclusions, producing superficially plausible but logically incorrect outputs.
+
+\paragraph{Nothing-Follows Blindspot}
+Many syllogisms correctly yield ``nothing follows'' (no valid conclusion). Pre-trained LLMs have a strong bias to produce some relation rather than admit neutrality, which makes them fail on neutral/invalid test cases.
+
+\paragraph{Figural / Layout Sensitivity}
+Models are highly sensitive to token ordering and prompt layout. When variables are presented in a particular sequence (A→B→C), models prefer conclusions matching that order; when the order is changed, their behavior can flip. This shows reliance on sequential text patterns rather than context-free logical form.
+
+\section{Existing Mitigation Approaches}
+
+Researchers have tried several fixes across prompting, fine-tuning, and inference-time interventions:
+
+\begin{itemize}
+	\item Translate-and-Explain (Chain-of-Thought): Prompt models to translate natural language into formal symbolic logic before solving. Models are often good at producing formal translations, which can help but do not fully eliminate downstream reasoning errors.
+	\item Supervised Fine-Tuning on Pseudo-Words: Replacing nouns with random pseudo-words (e.g., "schmeeft") has been shown to help detach grammatical structure from real-world meaning and reduce belief-driven errors in some settings.
+	\item Activation Steering (Inference Interventions): Identify hidden directions correlated with world knowledge and subtract or modulate them during inference to reduce factual leakage and force reliance on logical form.
+	\item Conditional Dynamic Steering (K-CAST): Apply a runtime, k-NN-based steering magnitude calibrated to the prompt's degree of factual/logic conflict. This dynamic approach avoids the instability of a one-size-fits-all steering vector.
+\end{itemize}
+
+\section{Open Research Challenges}
+
+Even with these approaches, several challenges remain:
+
+\begin{itemize}
+	\item The Scaling Limit Paradox: Larger models improve somewhat but plateau, and in some cases become more confidently wrong because they internalize human reasoning errors.
+	\item Multi-Step Extrapolation Wall: Models fine-tuned on two-premise syllogisms fail to generalize to longer deductive chains (3--4 premises).
+	\item Cross-Lingual Knowledge Mess: Mixing multilingual context during retrieval or prompt augmentation can introduce noisy cross-language signals that hurt logical reasoning.
+\end{itemize}
+
+\bibliographystyle{acl_natbib}
+\bibliography{anthology,custom}
+
+\end{document}
+
