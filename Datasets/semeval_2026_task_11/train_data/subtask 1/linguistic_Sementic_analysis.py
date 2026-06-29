@@ -105,7 +105,7 @@ c_dist = collections.Counter(conclusion_quantifiers)
 combo_dist = collections.Counter(quantifier_combinations)
 
 print("="*60)
-print("     PHASE 2: GENERALIZED NON-OVERFITTING RESULTS     ")
+print("     PHASE 2 : Linguistic and Semantic Analysis (Keyword Tracking)     ")
 print("="*60)
 print(f"Premises:   {dict(p_dist)}")
 print(f"Conclusions: {dict(c_dist)}")
