@@ -90,7 +90,7 @@ Conclusions: {'no': 215, 'some': 559, 'all': 186}
 Top Layouts: [('no + all -> some', 111), ('all + all -> all', 104), ('all + some -> some', 93)]
 ============================================================
 ======================================================================
-             PHASE 2 VISUAL AUDIT CHECK                     
+             PHASE 2 VISUAL AUDIT CHECK                   
 ======================================================================
 Sample #1:
   Text: There are no animals that are also plants. At least one tree is a plant. At least one tree is not an animal.
@@ -118,7 +118,7 @@ Sample #5:
 
 ```text
 =================================================================
-          PHASE 4: LEXICAL OVERLAP ANALYSIS REPORT         
+          PHASE 4: LEXICAL OVERLAP ANALYSIS REPORT       
 =================================================================
 Average Jaccard Similarity between Premises & Conclusions: 0.2317
 Max Overlap Score: 1.00 | Min Overlap Score: 0.00
@@ -156,7 +156,7 @@ from the premises, which helps answer if models can exploit simple word-matching
 
 ```text
 =================================================================
-       PHASE 3: BELIEVABILITY & BIAS MATRIX REPORT          
+       PHASE 3: BELIEVABILITY & BIAS MATRIX REPORT        
 =================================================================
 Total Dataset Samples Evaluated: 960
 -----------------------------------------------------------------
@@ -201,7 +201,7 @@ Are 'Invalid' statements mostly coded as plausible to trap models?
 ```text
 Parsing 960 samples using spaCy parse-trees... (This might take a few seconds)
 =================================================================
-     PHASE 4: ADVANCED SYNTACTIC & LOGICAL FORM REPORT    
+     PHASE 4: ADVANCED SYNTACTIC & LOGICAL FORM REPORT  
 =================================================================
 Average Grammatical Parse-Tree Depth: 4.29 levels deep
 Max Sentence Tree Complexity Encountered: 9 levels
@@ -220,65 +220,71 @@ TOP CLASSICAL SYLLOGISTIC FORMS DETECTED IN DATASET:
 ## Phase 5: Feature Engineering & ML Pipeline (Feature Extraction)
 
 ### Implementation
-*   **File:** [build_ml_pipeline.py](file:///Users/home/Desktop/Internship/Datasets/semeval_2026_task_11/train_data/subtask%201/build_ml_pipeline.py)
-*   **Functionality:** Processes the raw syllogism texts and maps them to a set of hand-engineered and embedding-based features spanning three core feature categories. The final processed spreadsheet is exported as `extracted_features.csv` (960 rows $\times$ 18 columns).
+
+* **File:** [build_ml_pipeline.py](file:///Users/home/Desktop/Internship/Datasets/semeval_2026_task_11/train_data/subtask%201/build_ml_pipeline.py)
+* **Functionality:** Processes the raw syllogism texts and maps them to a set of hand-engineered and embedding-based features spanning three core feature categories. The final processed spreadsheet is exported as `extracted_features.csv` (960 rows $\times$ 18 columns).
 
 ### Feature Categories Map
-1.  **Content Features:**
-    *   **Entity Embeddings:** Low-dimensional semantic vectors of the premises and conclusion.
-    *   **Entity Frequency:** Count of unique, non-stop content entities inside the premises (`entity_freq_p1`) and conclusion (`entity_freq_c`).
-    *   **Semantic Similarity:** Cosine similarity of the sentence embeddings for the combined premises vs. the conclusion, calculated using the `all-MiniLM-L6-v2` SentenceTransformer.
-    *   **Believability Scores:** Mapped from the dataset's ground truth `plausibility` (1 for True, 0 for False).
-    *   **Lexical Overlap:** Jaccard similarity score comparing content nouns between premises and conclusions.
-2.  **Logical Structure Features:**
-    *   **Quantifier Types:** Mapped to categorical numeric codes (1 for ALL, 2 for NO, 3 for SOME) for $P_1$, $P_2$, and $C$.
-    *   **Quantifier Sequences:** Evaluated implicitly through sequence ordering of the categorical quantifier variables.
-    *   **Negation Counts:** Total occurrences of negation indicators per premise (`p1_negations`, `p2_negations`) and conclusion (`c_negations`).
-    *   **Negation Positions:** Extracted on a sentence-by-sentence level.
-    *   **Syllogistic Form:** Synthesized categorical representation of premises and conclusion quantifiers.
-    *   **Subject-Predicate Structure & Premise-Conclusion Mappings:** Represented through structured overlap metrics and directional similarity metrics.
-3.  **Syntactic Features:**
-    *   **Dependency Depth & Parse-tree Depth:** Computed using `spaCy` dependency tree parsing (`avg_parse_depth` and `max_parse_depth`).
-    *   **Sentence Length:** Total word count of the entire syllogism.
-    *   **Clause Count:** Calculated using punctuation flags (commas and semicolons).
+
+1. **Content Features:**
+   * **Entity Embeddings:** Low-dimensional semantic vectors of the premises and conclusion.
+   * **Entity Frequency:** Count of unique, non-stop content entities inside the premises (`entity_freq_p1`) and conclusion (`entity_freq_c`).
+   * **Semantic Similarity:** Cosine similarity of the sentence embeddings for the combined premises vs. the conclusion, calculated using the `all-MiniLM-L6-v2` SentenceTransformer.
+   * **Believability Scores:** Mapped from the dataset's ground truth `plausibility` (1 for True, 0 for False).
+   * **Lexical Overlap:** Jaccard similarity score comparing content nouns between premises and conclusions.
+2. **Logical Structure Features:**
+   * **Quantifier Types:** Mapped to categorical numeric codes (1 for ALL, 2 for NO, 3 for SOME) for $P_1$, $P_2$, and $C$.
+   * **Quantifier Sequences:** Evaluated implicitly through sequence ordering of the categorical quantifier variables.
+   * **Negation Counts:** Total occurrences of negation indicators per premise (`p1_negations`, `p2_negations`) and conclusion (`c_negations`).
+   * **Negation Positions:** Extracted on a sentence-by-sentence level.
+   * **Syllogistic Form:** Synthesized categorical representation of premises and conclusion quantifiers.
+   * **Subject-Predicate Structure & Premise-Conclusion Mappings:** Represented through structured overlap metrics and directional similarity metrics.
+3. **Syntactic Features:**
+   * **Dependency Depth & Parse-tree Depth:** Computed using `spaCy` dependency tree parsing (`avg_parse_depth` and `max_parse_depth`).
+   * **Sentence Length:** Total word count of the entire syllogism.
+   * **Clause Count:** Calculated using punctuation flags (commas and semicolons).
 
 ---
 
 ## Phase 6: Machine Learning Models (Training Classifiers)
 
 ### Implementation
-*   **File:** [train_models.py](file:///Users/home/Desktop/Internship/Datasets/semeval_2026_task_11/train_data/subtask%201/train_models.py)
-*   **Functionality:** Employs three distinct modeling strategies to predict logical validity (`validity: true/false`). Standardizes all numerical features using `StandardScaler` to ensure classification stability.
+
+* **File:** [train_models.py](file:///Users/home/Desktop/Internship/Datasets/semeval_2026_task_11/train_data/subtask%201/train_models.py)
+* **Functionality:** Employs three distinct modeling strategies to predict logical validity (`validity: true/false`). Standardizes all numerical features using `StandardScaler` to ensure classification stability.
 
 ### Modeling Strategies
-*   **Strategy 1: Text-Only Baseline (TF-IDF -> SVM)**
-    *   Extracts TF-IDF features (max 500 features) from raw syllogism strings.
-    *   Trains a **Support Vector Machine (SVM)** classifier with a linear kernel as a traditional bag-of-words benchmark.
-*   **Strategy 2: Linguistic Features Only**
-    *   Uses only the engineered content, logical, and syntactic features from Phase 5.
-    *   Trains a **Random Forest Classifier** and an **XGBoost Classifier**.
-*   **Strategy 3: Hybrid ML Models**
-    *   Combines the sparse TF-IDF text matrix and the standardized dense linguistic feature matrix (`np.hstack`).
-    *   Trains a **Hybrid Logistic Regression** model and a **Hybrid XGBoost Classifier**.
+
+* **Strategy 1: Text-Only Baseline (TF-IDF -> SVM)**
+  * Extracts TF-IDF features (max 500 features) from raw syllogism strings.
+  * Trains a **Support Vector Machine (SVM)** classifier with a linear kernel as a traditional bag-of-words benchmark.
+* **Strategy 2: Linguistic Features Only**
+  * Uses only the engineered content, logical, and syntactic features from Phase 5.
+  * Trains a **Random Forest Classifier** and an **XGBoost Classifier**.
+* **Strategy 3: Hybrid ML Models**
+  * Combines the sparse TF-IDF text matrix and the standardized dense linguistic feature matrix (`np.hstack`).
+  * Trains a **Hybrid Logistic Regression** model and a **Hybrid XGBoost Classifier**.
 
 ---
 
 ## Phase 7: Final Performance Evaluation
 
 ### Evaluation Setup
+
 The dataset is split into an 80/20 train/test split (768 training samples, 192 test samples) with a fixed random seed (`random_state=42`) to guarantee fair comparison.
 
 ### Performance Metrics Comparison
 
-| Strategy | Classifier Model | Feature Set | Test Accuracy |
-| :--- | :--- | :--- | :---: |
-| **Strategy 1** | SVM | TF-IDF Text Baseline | 70.83% |
-| **Strategy 2** | Random Forest | Linguistic Features Only | 85.42% |
-| **Strategy 2** | XGBoost | Linguistic Features Only | 83.85% |
-| **Strategy 3** | Logistic Regression | Hybrid (TF-IDF + Linguistics) | 74.48% |
+| Strategy             | Classifier Model    | Feature Set                   |  Test Accuracy  |
+| :------------------- | :------------------ | :---------------------------- | :--------------: |
+| **Strategy 1** | SVM                 | TF-IDF Text Baseline          |      70.83%      |
+| **Strategy 2** | Random Forest       | Linguistic Features Only      |      85.42%      |
+| **Strategy 2** | XGBoost             | Linguistic Features Only      |      83.85%      |
+| **Strategy 3** | Logistic Regression | Hybrid (TF-IDF + Linguistics) |      74.48%      |
 | **Strategy 3** | XGBoost (Top Model) | Hybrid (TF-IDF + Linguistics) | **85.94%** |
 
 ### Top Model Analysis (Hybrid XGBoost)
+
 The classification report for the top-performing **Hybrid XGBoost** model shows highly balanced precision and recall on the test set:
 
 ```text
@@ -293,9 +299,10 @@ weighted avg       0.86      0.86      0.86       192
 ```
 
 ### Analysis Summary
-*   **Text-Only SVM** achieves a modest `70.83%` accuracy, illustrating that lexical content and word distribution alone are insufficient to solve formal deductive reasoning tasks.
-*   **Linguistic-Only Random Forest** performs exceptionally well at `85.42%`, demonstrating that hand-engineered logical rules, negation metrics, and parse depths are strong signals for logical validity.
-*   **Hybrid XGBoost** yields the highest accuracy of **`85.94%`**. Combining bag-of-words details with syntactic/logical structure features allows the tree-boosting algorithm to resolve edge-case semantic traps.
+
+* **Text-Only SVM** achieves a modest `70.83%` accuracy, illustrating that lexical content and word distribution alone are insufficient to solve formal deductive reasoning tasks.
+* **Linguistic-Only Random Forest** performs exceptionally well at `85.42%`, demonstrating that hand-engineered logical rules, negation metrics, and parse depths are strong signals for logical validity.
+* **Hybrid XGBoost** yields the highest accuracy of **`85.94%`**. Combining bag-of-words details with syntactic/logical structure features allows the tree-boosting algorithm to resolve edge-case semantic traps.
 
 ---
 
@@ -317,8 +324,8 @@ To run these scripts and reproduce the findings:
    python LexicalOverlap.py
    python BelievabilityMatrix.py
    python SyntacticNLPAnalysis.py
-   
+
    # Step 2: Extract features & train classifiers (Phases 5-7)
    python build_ml_pipeline.py
-   python train_models.py
+   python train_models.py 
    ```
